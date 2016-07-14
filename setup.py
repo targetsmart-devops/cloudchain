@@ -7,8 +7,8 @@ setup(
   description = 'Secure, easy secrets.',
   author = 'Jonathan Buys',
   author_email = 'jonathan.buys@targetsmart.com',
-  url = 'git@bitbucket.org:targetsmart_devops/cloudchain.git',
-  download_url = 'git@bitbucket.org:targetsmart_devops/cloudchain.git',
+  url = 'https://github.com/targetsmart-devops/cloudchain.git',
+  download_url = 'https://github.com/targetsmart-devops/cloudchain.git',
   keywords = ['secrets', 'password', 'account'],
   classifiers = [],
   install_requires=[
