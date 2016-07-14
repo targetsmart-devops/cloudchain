@@ -10,7 +10,7 @@ Install with pip:
 
 `pip install cloudchain`
 
-A new encryption key should be created in [KMS][3]. Using the console makes this easy, and sets up permissions to the key using IAM users or Roles. IAM users should be given permission individually, while instances launching in AWS should be identified by a role. 
+A new encryption key should be created in KMS. Using the console makes this easy, and sets up permissions to the key using IAM users or Roles. IAM users should be given permission individually, while instances launching in AWS should be identified by a role. 
 
 A new DynamoDB table should be created as well. Run this command using the AWS CLI tools:
 
@@ -103,6 +103,5 @@ To retrieve a secret:
 
 [1]: https://aws.amazon.com/kms/?tag=duckduckgo-osx-20
 [2]: https://aws.amazon.com/dynamodb/
-[3]: https://console.aws.amazon.com/iam/home?region=us-east-1#encryptionKeys/us-east-1
 
 
