@@ -6,6 +6,10 @@ There are three steps in the process. First, cloudchain retrieves an encryption 
 
 ## Setup
 
+Install with pip:
+
+`pip install cloudchain`
+
 A new encryption key should be created in [KMS][3]. Using the console makes this easy, and sets up permissions to the key using IAM users or Roles. IAM users should be given permission individually, while instances launching in AWS should be identified by a role. 
 
 A new DynamoDB table should be created as well. Run this command using the AWS CLI tools:
