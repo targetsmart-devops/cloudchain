@@ -94,11 +94,11 @@ The command line script supports five arguments:
 
 To save a secret:
 
-`./cchain -u testuser --service testservice --save testsecreet` 
+`cchain -u testuser --service testservice --save testsecreet` 
 
 To retrieve a secret:
 
-`./cchain -u testuser --service testservice --read`
+`cchain -u testuser --service testservice --read`
 
 
 [1]: https://aws.amazon.com/kms/?tag=duckduckgo-osx-20
