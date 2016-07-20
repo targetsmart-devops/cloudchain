@@ -1,15 +1,14 @@
 import random
 import string
 import unittest
-import tempfile
+import sys
+import codecs
 
 from cloudchain import cloudchain
 from cloudchain.cloudchain import CloudChain
 from cloudchain.cloudchain import CloudChainConfigError
 from cloudchain.cloudchain import CloudChainError
 
-import sys
-import codecs
 if sys.hexversion < 0x03000000:
     def uwriter(fp):
         return codecs.getwriter('utf-8')(fp)
