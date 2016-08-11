@@ -48,12 +48,24 @@ class CloudChainConfigError(CloudChainError):
 
 
 class CloudChain:
-    def __init__(self, region_name=None, endpoint_url=None, table_name=None, key_alias=None, boto_manager=None):
+    def __init__(self, region_name=None,
+                 endpoint_url=None, table_name=None,
+                 key_alias=None, boto_manager=None,
+                 bypass=False):
+        """
+        - region_name: AWS DynamoDB region, e.g., 'us-east-1'
+        - endpoint_url: AWS DynamoDB endpoint, e.g., 'https://dynamodb.us-east-1.amazonaws.com'
+        - table_name: AWS DynamoDB table name
+        - keyalias: key alias, e.g., 'alias/TS_Client_Key'
+        - boto_manager:
+        - bypass: If set to True, read_credentials will always return None. This is useful for local development of feature that do not require secrets, without removing any cloudchain usage.
+        """
         self.region_name = region_name
         self.endpoint_url = endpoint_url
         self.table_name = table_name
         self.key_alias = key_alias
         self.boto_manager = boto_manager
+        self.bypass = bypass
 
     def set_region_name(self, region_name):
         self.region_name = region_name
@@ -134,6 +146,9 @@ class CloudChain:
         return conn
 
     def save_credentials(self, service, username, creds):
+        if self.bypass:
+            logging.warning("No cloudchain credentials were saved as bypass was True")
+            return True
         saved_string = self.encrypt_credentials(creds)
         conn = self.get_connection()
         table = conn.Table(tablename)
@@ -168,6 +183,10 @@ class CloudChain:
         return decrypted_key['Plaintext']
 
     def read_credentials(self, service, username):
+        if self.bypass:
+            logging.warning("No cloudchain credentials were read as bypass was set to True")
+            return None
+
         conn = self.get_connection()
         table = conn.Table(tablename)
         response = table.get_item(
@@ -189,13 +208,13 @@ endpoint_url = None
 tablename = None
 keyalias = None
 cloud_chain = None
-
+bypass = False
 
 def get_default_cloud_chain():
     global cloud_chain
 
     if cloud_chain is None:
-        cloud_chain = CloudChain(region_name, endpoint_url, tablename, keyalias, BotoManager(region_name, endpoint_url))
+        cloud_chain = CloudChain(region_name, endpoint_url, tablename, keyalias, BotoManager(region_name, endpoint_url), bypass)
     return cloud_chain
 
 
