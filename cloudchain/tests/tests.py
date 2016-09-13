@@ -1,12 +1,20 @@
 import random
 import string
 import unittest
-import tempfile
+import sys
+import codecs
 
 from cloudchain import cloudchain
 from cloudchain.cloudchain import CloudChain
 from cloudchain.cloudchain import CloudChainConfigError
 from cloudchain.cloudchain import CloudChainError
+
+if sys.hexversion < 0x03000000:
+    def uwriter(fp):
+        return codecs.getwriter('utf-8')(fp)
+else:
+    def uwriter(fp):
+        return fp
 
 FIXTURE_SERVICE_1 = 'test'
 FIXTURE_USERNAME_1 = 'test'
@@ -87,19 +95,21 @@ tablename = test_tablename
 [IAMKMS]
 keyalias = test_keyalias
 """
-        tmp = tempfile.NamedTemporaryFile()
-        tmp.write(contents)
-        tmp.flush()
-        config = cloudchain.read_configfile(tmp.name)
-        self.assertEqual(config.get('dynamo', 'region_name'), 'test_region')
-        self.assertEqual(config.get('dynamo', 'endpoint_url'), 'test_url')
-        self.assertEqual(config.get('dynamo', 'tablename'), 'test_tablename')
-        self.assertEqual(config.get('IAMKMS', 'keyalias'), 'test_keyalias')
-        cloud_chain = cloudchain.get_default_cloud_chain()
-        self.assertEqual(cloud_chain.region_name, 'test_region')
-        self.assertEqual(cloud_chain.endpoint_url, 'test_url')
-        self.assertEqual(cloud_chain.table_name, 'test_tablename')
-        self.assertEqual(cloud_chain.key_alias, 'test_keyalias')
+#         tmp = tempfile.NamedTemporaryFile()
+        from tempfile import NamedTemporaryFile
+        with uwriter(NamedTemporaryFile(suffix='.txt', mode='w')) as tmp:
+            tmp.write(contents)
+            tmp.flush()
+            config = cloudchain.read_configfile(tmp.name)
+            self.assertEqual(config.get('dynamo', 'region_name'), 'test_region')
+            self.assertEqual(config.get('dynamo', 'endpoint_url'), 'test_url')
+            self.assertEqual(config.get('dynamo', 'tablename'), 'test_tablename')
+            self.assertEqual(config.get('IAMKMS', 'keyalias'), 'test_keyalias')
+            cloud_chain = cloudchain.get_default_cloud_chain()
+            self.assertEqual(cloud_chain.region_name, 'test_region')
+            self.assertEqual(cloud_chain.endpoint_url, 'test_url')
+            self.assertEqual(cloud_chain.table_name, 'test_tablename')
+            self.assertEqual(cloud_chain.key_alias, 'test_keyalias')
 
     def test_region_name_config_error(self):
         self.cloud_chain.set_region_name(None)

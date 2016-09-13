@@ -2,9 +2,10 @@ import logging
 import boto3
 from base64 import b64encode
 from base64 import b64decode
-import ConfigParser
+from six.moves import configparser
 import os
 import os.path
+import sys
 
 
 class BotoManager:
@@ -117,7 +118,7 @@ class CloudChain:
             raise CloudChainConfigError(
                 "Configuration file %s not found" % configfile)
 
-        config = ConfigParser.RawConfigParser()
+        config = configparser.RawConfigParser()
         config.read(configfile)
         region_name = config.get('dynamo', 'region_name')
         endpoint_url = config.get('dynamo', 'endpoint_url')
@@ -145,6 +146,15 @@ class CloudChain:
         conn = self.boto_manager.get_connection('dynamodb')
         return conn
 
+    def comp64encrypt(self, secret):
+        if (sys.version_info > (3, 0)):
+            if isinstance(secret, str):
+                secret = secret.encode('ascii')
+
+            return b64encode(secret).decode('ascii')
+        else:
+            return b64encode(secret)
+
     def save_credentials(self, service, username, creds):
         if self.bypass:
             logging.warning("No cloudchain credentials were saved as bypass was True")
@@ -156,7 +166,7 @@ class CloudChain:
             Item={
                 'Service': service,
                 'Username': username,
-                'Secret': b64encode(saved_string)
+                'Secret': self.comp64encrypt(saved_string)
             }
         )
         return True
@@ -170,7 +180,9 @@ class CloudChain:
                 'string': 'string'
             }
         )
-        return encrypted_key['CiphertextBlob']
+
+        secret = encrypted_key['CiphertextBlob']
+        return secret
 
     def decrypt_credentials(self, creds):
         client = self.boto_manager.get_client('kms')
