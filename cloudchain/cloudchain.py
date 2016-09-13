@@ -2,7 +2,7 @@ import logging
 import boto3
 from base64 import b64encode
 from base64 import b64decode
-from six.moves import configparser
+import ConfigParser
 import os
 import os.path
 import sys
@@ -118,7 +118,7 @@ class CloudChain:
             raise CloudChainConfigError(
                 "Configuration file %s not found" % configfile)
 
-        config = configparser.RawConfigParser()
+        config = ConfigParser.RawConfigParser()
         config.read(configfile)
         region_name = config.get('dynamo', 'region_name')
         endpoint_url = config.get('dynamo', 'endpoint_url')
