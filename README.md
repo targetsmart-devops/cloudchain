@@ -53,7 +53,7 @@ Both the `test.py` unit tests and the `cchain` cli import `cloudchain.py`. After
 * tablename 
 * keyalias
 
-Reasonable defaults are mentioned in the configuration section above, but the `keyalias` must be unique. 
+These variables can be set in the code directly, or imported from the config file by calling `cloudchain.read_configfile()`. 
 
 After importing, cloudchain can be called on to encrypt and decrypt secrets:
 
