@@ -6,8 +6,9 @@ from configparser import RawConfigParser
 import os
 import os.path
 import sys
-import tempfile
-import json
+
+localcache = {}
+cached = False
 
 class BotoManager:
     def __init__(self, aws_region_name=None, aws_endpoint_url=None):
@@ -67,6 +68,7 @@ class CloudChain:
         self.key_alias = key_alias
         self.boto_manager = boto_manager
         self.bypass = bypass
+        self.use_cache = use_cache
 
     def set_region_name(self, region_name):
         self.region_name = region_name
@@ -82,6 +84,7 @@ class CloudChain:
 
     def set_boto_manager(self, boto_manager):
         self.boto_manager = boto_manager
+
 
     @staticmethod
     def read_configfile(configfile=None):
@@ -124,12 +127,15 @@ class CloudChain:
         endpoint_url = config.get('dynamo', 'endpoint_url')
         tablename = config.get('dynamo', 'tablename')
         keyalias = config.get('IAMKMS', 'keyalias')
+        use_cache = config.getboolean('dynamo', 'use_cache')
         logging.debug("Set region_name to %s", region_name)
         logging.debug("Set endpoint_url to %s", endpoint_url)
         logging.debug("Set tablename to %s", tablename)
         logging.debug("Set keyalias to %s", keyalias)
+        logging.debug("Set use_cache to %s", use_cache)
 
         return config
+
 
     def check_config(self):
         if self.region_name is None:
@@ -140,6 +146,9 @@ class CloudChain:
             raise CloudChainConfigError("tablename is not set")
         if self.key_alias is None:
             raise CloudChainConfigError("keyalias is not set")
+        if self.use_cache is None:
+            raise CloudChainConfigError("use_cache is not set")
+
 
     def get_connection(self):
         self.check_config()
@@ -198,25 +207,44 @@ class CloudChain:
         if self.bypass:
             logging.warning("No cloudchain credentials were read as bypass was set to True")
             return None
+        
+        if self.use_cache:
+            # read from localcache
+            print "whatever"
+            if not cached:
+                self.cache_creds()
+#                 global cached
+#                 cached = True
+            
+            items = localcache["Items"]
+                        
+            for entry in items:
+#                 print entry["Service"]
+#                 print service
+                if entry["Service"] == service:
+                    print entry
+                    item = entry
+                
+                
 
-        conn = self.get_connection()
-        table = conn.Table(tablename)
-        response = table.get_item(
-            Key={
-                'Service': service,
-                'Username': username
-            }
-        )
-        try:
-            item = response['Item']
-        except KeyError:
-            raise CloudChainError("Query failed. The service or username value provided was not found")
+
+        else:
+            print "Should be False"
+            conn = self.get_connection()
+            table = conn.Table(tablename)
+            response = table.get_item(
+                Key={
+                    'Service': service,
+                    'Username': username
+                }
+            )
+            try:
+                item = response['Item']
+            except KeyError:
+                raise CloudChainError("Query failed. The service or username value provided was not found")
+
         decrypted_credentials = self.decrypt_credentials(b64decode(item['Secret']))
         return decrypted_credentials
-
-    def cache_tmp_file(self):
-        localcache = tempfile.NamedTemporaryFile(delete=False)
-        return localcache
 
     def cache_creds(self):
         if self.bypass:
@@ -225,15 +253,13 @@ class CloudChain:
 
         conn = self.get_connection()
         table = conn.Table(tablename)
-        response = table.scan()
-#         print response
-        localCopy = self.cache_tmp_file()
-        print localCopy.name
         
         try:
-            json.dump(response, open(localCopy.name,'w'))
+            response = table.scan()
+            global localcache
+            localcache = response
         except:
-            raise CloudChainError("Failed to cache credentials locally.");
+            raise CloudChainError("Failed to cache credentials in memory.");
 
 
 region_name = None
@@ -242,6 +268,7 @@ tablename = None
 keyalias = None
 cloud_chain = None
 bypass = False
+use_cache = None
 
 def get_default_cloud_chain():
     global cloud_chain
@@ -256,13 +283,14 @@ def read_configfile(configfile=None):
     global endpoint_url
     global tablename
     global keyalias
+    global use_cache
 
     config = CloudChain.read_configfile(configfile)
     region_name = config.get('dynamo', 'region_name')
     endpoint_url = config.get('dynamo', 'endpoint_url')
     tablename = config.get('dynamo', 'tablename')
     keyalias = config.get('IAMKMS', 'keyalias')
-
+    use_cache = config.getboolean('dynamo', 'use_cache')
     return config
 
 
