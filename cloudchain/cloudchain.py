@@ -6,7 +6,8 @@ from configparser import RawConfigParser
 import os
 import os.path
 import sys
-
+import tempfile
+import json
 
 class BotoManager:
     def __init__(self, aws_region_name=None, aws_endpoint_url=None):
@@ -38,7 +39,6 @@ class BotoManager:
             BotoManager.__fail_if_none__(aws_region_name, 'Error CC3: Region name must be set.')
         client = boto3.client(service_name, region_name=aws_region_name)
         return client
-
 
 class CloudChainError(Exception):
     pass
@@ -214,6 +214,27 @@ class CloudChain:
         decrypted_credentials = self.decrypt_credentials(b64decode(item['Secret']))
         return decrypted_credentials
 
+    def cache_tmp_file(self):
+        localcache = tempfile.NamedTemporaryFile(delete=False)
+        return localcache
+
+    def cache_creds(self):
+        if self.bypass:
+            logging.warning("No cloudchain credentials were read as bypass was set to True")
+            return None
+
+        conn = self.get_connection()
+        table = conn.Table(tablename)
+        response = table.scan()
+#         print response
+        localCopy = self.cache_tmp_file()
+        print localCopy.name
+        
+        try:
+            json.dump(response, open(localCopy.name,'w'))
+        except:
+            raise CloudChainError("Failed to cache credentials locally.");
+
 
 region_name = None
 endpoint_url = None
@@ -271,3 +292,7 @@ def decryptcreds(creds):
 
 def readcreds(service, username):
     return get_default_cloud_chain().read_credentials(service, username)
+
+
+def cache_creds():
+    return get_default_cloud_chain().cache_creds()
