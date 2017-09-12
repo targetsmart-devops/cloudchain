@@ -13,3 +13,4 @@ from .cloudchain import region_name
 from .cloudchain import savecreds
 from .cloudchain import tablename
 from .cloudchain import get_default_cloud_chain
+from .cloudchain import cache_creds

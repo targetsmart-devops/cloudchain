@@ -2,6 +2,8 @@ from __future__ import print_function  # Python 2/3 compatibility
 
 import argparse
 import cloudchain
+import json
+from base64 import b64decode
 
 
 def main():
@@ -20,7 +22,12 @@ def main():
         help='Service or application'
     )
 
-    group = parser.add_mutually_exclusive_group(required=True)
+    parser.add_argument(
+        '--export',
+        help='Export all secrets, decrypted, to stdout'
+    )
+
+    group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument(
         '-s',
         '--save',
@@ -44,3 +51,15 @@ def main():
 
     if (args['read']):
         print(cloudchain.readcreds(args['service'], args['user']))
+
+    if (args['export']):
+        localexport = []
+        cloudchain.cache_creds()
+        items = cloudchain.localcache["Items"]
+                        
+        for entry in items:
+            if entry["Secret"]:
+                decrypted = cloudchain.decryptcreds(b64decode(entry['Secret']))
+            newitem = {"Service": entry["Service"], "Username": entry["Username"], "Secret": decrypted}
+            localexport.append(newitem)
+        print(json.dumps(localexport, sort_keys=True, indent=4, separators=(',', ': ')))
