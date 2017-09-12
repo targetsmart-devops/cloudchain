@@ -208,26 +208,19 @@ class CloudChain:
             logging.warning("No cloudchain credentials were read as bypass was set to True")
             return None
         
+        global cached
+        
         if self.use_cache:
-            # read from localcache
-            print "whatever"
             if not cached:
                 self.cache_creds()
-#                 global cached
-#                 cached = True
+                cached = True
             
             items = localcache["Items"]
                         
             for entry in items:
-#                 print entry["Service"]
-#                 print service
                 if entry["Service"] == service:
-                    print entry
                     item = entry
                 
-                
-
-
         else:
             print "Should be False"
             conn = self.get_connection()
