@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='cloudchain',
     packages=['cloudchain'],  # this must be the same as the name above
-    version='0.1.4',
+    version='0.1.5',
     description='Secure, easy secrets.',
     author='Jonathan Buys',
     author_email='jonathan.buys@targetsmart.com',
