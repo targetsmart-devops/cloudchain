@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='cloudchain',
     packages=['cloudchain'],  # this must be the same as the name above
-    version='0.1.5',
+    version='0.1.6',
     description='Secure, easy secrets.',
     author='Jonathan Buys',
     author_email='jonathan.buys@targetsmart.com',
@@ -12,7 +12,7 @@ setup(
     keywords=['secrets', 'password', 'account'],
     classifiers=[],
     install_requires=[
-        'boto3>=1.3.1',
+        'boto3>=1.5.7',
         'botocore>=1.4.18',
         'docutils>=0.12',
         'futures>=3.0.5',
